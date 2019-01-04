@@ -53,3 +53,7 @@ Next, run your `drake` project.
 library(drake.future.lapply.staged)
 make(plan, parallelism = backend_future_lapply_staged, jobs = 2)
 ```
+
+```{r cleanup, echo = FALSE}
+unlink(".drake", recursive = TRUE)
+```
