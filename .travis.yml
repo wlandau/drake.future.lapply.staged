@@ -16,7 +16,6 @@ script:
   - |
     R CMD build .
     R CMD INSTALL drake*tar.gz
-    Rscript pkgdown.R
     R CMD check drake*tar.gz
     Rscript -e 'cov <- covr::package_coverage()' -e 'print(cov)' -e 'covr::codecov(coverage = cov)'
 
