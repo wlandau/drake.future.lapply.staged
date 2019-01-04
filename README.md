@@ -1,5 +1,5 @@
 
-[![stability-deprecated](https://img.shields.io/badge/stability-deprecated-red.svg)](https://github.com/emersion/stability-badges#deprecated) [![Travis build status](https://travis-ci.org/wlandau/drake.staged.svg?branch=master)](https://travis-ci.org/wlandau/drake.staged)
+[![stability-deprecated](https://img.shields.io/badge/stability-deprecated-red.svg)](https://github.com/emersion/stability-badges#deprecated) [![Travis build status](https://travis-ci.org/wlandau/drake.staged.svg?branch=master)](https://travis-ci.org/wlandau/drake.staged) [![Test coverage](https://codecov.io/github/wlandau/drake.future.lapply.staged/coverage.svg?branch=master)](https://codecov.io/github/wlandau/drake.future.lapply.staged?branch=master)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 Staged parallelism for the drake R package
@@ -46,5 +46,10 @@ Next, run your `drake` project.
 ``` r
 library(drake.future.lapply.staged)
 make(plan, parallelism = backend_future_lapply_staged, jobs = 2)
-#> All targets are already up to date.
+#> Warning: `drake` can indeed accept a custom scheduler function for the
+#> `parallelism` argument of `make()` but this is only for the sake of
+#> experimentation and graceful deprecation. Your own custom schedulers may
+#> cause surprising errors. Use at your own risk.
+#> Warning: Staged parallelism for drake is deprecated and will be removed
+#> eventually.
 ```
