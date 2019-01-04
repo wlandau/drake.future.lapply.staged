@@ -23,11 +23,12 @@ Depends:
   R (>= 3.4.0),
   drake
 Imports:
+  future.apply,
+  igraph
+Suggests:
   future,
-  future.apply
+  testthat
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-Suggests:
-  testthat
 RoxygenNote: 6.1.1

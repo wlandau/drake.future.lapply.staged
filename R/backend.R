@@ -1,148 +1,88 @@
-#' @title Hasty mode for the drake R package
-#' @description Sacrifices reproducibility to gain speed.
-#'   Targets are never cached and never up to date.
-#'   Use at your own risk.
+#' @title Staged parallelism for the drake R package
+#' @description With staged parallelism,
+#'   `drake` partitions the dependency graph into stages of
+#'   conditionally independent targets and processes each
+#'   stage with semi-transient parallel workers.
+#'   This functionality is already deprecated,
+#'   and it will be removed at some point later on.
 #' @export
 #' @param config a `drake_config()` object
 #' @examples
 #' # See <https://github.com/wlandau/drake.hasty/blob/master/README.md>
 #' # for examples.
-backend_hasty <- function(config) {
-  warn_hasty(config)
-  config$graph <- config$schedule
-  if (config$jobs > 1L) {
-    hasty_parallel(config)
-  } else{
-    hasty_loop(config)
-  }
-  invisible()
-}
-
-hasty_loop <- function(config) {
-  targets <- igraph::topo_sort(config$schedule)$name
-  for (target in targets) {
-    drake:::console_target(target = target, config = config)
-    config$eval[[target]] <- config$hasty_build(
-      target = target,
-      config = config
+backend_future_lapply_staged <- function(config) {
+  warning(
+    "Staged parallelism for drake is deprecated ",
+    "and will be removed eventually.",
+    call. = FALSE
+  )
+  drake:::assert_pkg("future")
+  drake:::assert_pkg("future.apply")
+  fls_prepare(config = config)
+  schedule <- config$schedule
+  while (length(igraph::V(schedule)$name)) {
+    targets <- drake:::leaf_nodes(schedule)
+    future.apply::future_lapply(
+      X = targets,
+      FUN = fls_build,
+      cache_path = config$cache_path
     )
+    schedule <- igraph::delete_vertices(schedule, v = targets)
+  }
+  fls_conclude(config)
+  invisible()
+}
+
+
+fls_prepare <- function(config) {
+  if (!file.exists(config$cache_path)) {
+    dir.create(config$cache_path) # nocov
+  }
+  save(
+    list = setdiff(ls(globalenv(), all.names = TRUE), config$plan$target),
+    envir = globalenv(),
+    file = globalenv_file(config$cache_path)
+  )
+  for (item in c("envir", "schedule")) {
+    config$cache$set(key = item, value = config[[item]], namespace = "config")
   }
   invisible()
 }
 
-#' @title Build a target using "hasty" parallelism
-#' @description For internal use only
-#' @export
-#' @param target character, name of the target to build
-#' @param config a `drake_config()` object
-#' @inheritParams drake_build
-default_hasty_build <- function(target, config) {
-  tidy_expr <- eval(
-    expr = config$layout[[target]]$command_build,
-    envir = config$eval
+fls_build <- function(target, cache_path) {
+  config <- recover_drake_config(cache_path = cache_path)
+  eval(
+    parse(text = "base::require(drake.future.lapply.staged, quietly = TRUE)")
   )
-  eval(expr = tidy_expr, envir = config$eval)
-}
-
-hasty_parallel <- function(config) {
-  drake:::assert_pkg("clustermq", version = "0.8.5")
-  config$queue <- drake:::new_priority_queue(
-    config = config,
-    jobs = config$jobs_preprocess
-  )
-  if (!config$queue$empty()) {
-    config$workers <- clustermq::workers(
-      n_jobs = config$jobs,
-      template = config$template
-    )
-    drake:::cmq_set_common_data(config)
-    config$counter <- new.env(parent = emptyenv())
-    config$counter$remaining <- config$queue$size()
-    hasty_master(config)
-  }
-  invisible()
-}
-
-hasty_master <- function(config) {
-  on.exit(config$workers$finalize())
-  while (config$counter$remaining > 0) {
-    msg <- config$workers$receive_data()
-    conclude_hasty_build(msg = msg, config = config)
-    if (!identical(msg$token, "set_common_data_token")) {
-      config$workers$send_common_data()
-    } else if (!config$queue$empty()) {
-      hasty_send_target(config)
-    } else {
-      config$workers$send_shutdown_worker()
-    }
-  }
-  if (config$workers$cleanup()) {
-    on.exit()
-  }
-}
-
-hasty_send_target <- function(config) {
-  target <- config$queue$pop0()
-  if (!length(target)) {
-    config$workers$send_wait() # nocov
-    return() # nocov
-  }
-  drake:::console_target(target = target, config = config)
-  deps <- drake:::cmq_deps_list(target = target, config = config)
-  config$workers$send_call(
-    expr = drake::remote_hasty_build(
-      target = target,
-      deps = deps,
-      config = config
-    ),
-    env = list(target = target, deps = deps)
-  )
-}
-
-#' @title Build a target on a remote worker using "hasty" parallelism
-#' @description For internal use only
-#' @export
-#' @keywords internal
-#' @inheritParams drake_build
-#' @param deps named list of dependencies
-remote_hasty_build <- function(target, deps = NULL, config) {
   drake:::do_prework(config = config, verbose_packages = FALSE)
-  for (dep in names(deps)) {
-    config$eval[[dep]] <- deps[[dep]]
+  meta <- drake:::drake_meta(target = target, config = config)
+  if (!drake:::should_build_target(target, meta, config)) {
+    drake:::console_skip(target = target, config = config)
+    return(invisible())
   }
-  value <- config$hasty_build(target = target, config = config)
-  invisible(list(target = target, value = value))
+  drake:::announce_build(target = target, meta = meta, config = config)
+  drake:::set_attempt_flag(key = target, config = config)
+  drake:::manage_memory(targets = target, config = config)
+  build <- drake:::build_target(target = target, meta = meta, config = config)
+  drake:::conclude_build(build = build, config = config)
+  invisible()
 }
 
-conclude_hasty_build <- function(msg, config) {
-  if (is.null(msg$result)) {
-    return()
-  }
-  config$eval[[msg$result$target]] <- msg$result$value
-  revdeps <- drake:::dependencies(
-    targets = msg$result$target,
-    config = config,
-    reverse = TRUE
-  )
-  revdeps <- intersect(revdeps, config$queue$list())
-  config$queue$decrease_key(targets = revdeps)
-  config$counter$remaining <- config$counter$remaining - 1
+fls_conclude <- function(config) {
+  dir <- cache_path(config$cache)
+  file <- globalenv_file(dir)
+  unlink(file, force = TRUE)
 }
 
-warn_hasty <- function(config) {
-  msg <- paste(
-    "Hasty mode THROWS AWAY REPRODUCIBILITY to gain speed.",
-    "drake's scientific claims at",
-    "  https://ropensci.github.io/drake/#reproducibility-with-confidence", # nolint
-    "  are NOT VALID IN HASTY MODE!",
-    "Targets could be out of date even after make(),",
-    "  and you have no way of knowing.",
-    "USE AT YOUR OWN RISK!",
-    "Details: https://ropenscilabs.github.io/drake-manual/hpc.html#hasty-mode", # nolint
-    sep = "\n"
-  )
-  if (requireNamespace("crayon")) {
-    msg <- crayon::red(msg)
-  }
-  drake:::drake_warning(msg, config = config)
+recover_drake_config <- function(cache_path) {
+  cache <- drake:::this_cache(cache_path, verbose = FALSE)
+  config <- drake:::read_drake_config(cache = cache)
+  dir <- drake:::cache_path(cache = cache)
+  file <- globalenv_file(dir)
+  load(file = file, envir = globalenv())
+  config
+}
+
+globalenv_file <- function(cache_path) {
+  file.path(cache_path, "globalenv.RData")
 }

@@ -1,0 +1,25 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: R
+sudo: false
+cache: packages
+
+warnings_are_errors: true
+
+script:
+  - |
+    R CMD build .
+    R CMD INSTALL drake*tar.gz
+    Rscript pkgdown.R
+    R CMD check drake*tar.gz --no-tests
+    Rscript -e 'cov <- covr::package_coverage()' -e 'print(cov)' -e 'covr::codecov(coverage = cov)'
+
+after_success:
+  - ./pkgdown.sh
+  - Rscript -e 'lintr::lint_package()'
+
+after_failure:
+  - find *Rcheck -name '*fail' -print -exec cat '{}' \;
+
+env:
+  - NOT_CRAN = true

@@ -1,0 +1,4 @@
+^\.travis\.yml$
+^README\.Rmd$
+^drake\.future.lapply.staged\.Rproj$
+^\.Rproj\.user$

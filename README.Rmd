@@ -19,7 +19,7 @@ library(drake.future.lapply.staged)
 
 # Staged parallelism for the drake R package
 
-With staged parallelism, `drake` partitions the dependency graph into stages of conditionally independent targets and processes each stage with semi-transient parallel workers.
+With staged parallelism, `drake` partitions the dependency graph into stages of conditionally independent targets and processes each stage with semi-transient parallel workers. This functionality is already deprecated, and it will be removed at some point later on.
 
 ## Installation
 
