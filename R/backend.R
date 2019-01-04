@@ -36,7 +36,7 @@ backend_future_lapply_staged <- function(config) {
 
 fls_prepare <- function(config) {
   if (!file.exists(config$cache_path)) {
-    dir.create(config$cache_path) # nocov
+    dir.create(config$cache_path)
   }
   save(
     list = setdiff(ls(globalenv(), all.names = TRUE), config$plan$target),

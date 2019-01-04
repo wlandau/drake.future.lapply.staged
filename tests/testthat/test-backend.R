@@ -55,3 +55,14 @@ test_that("future-based staged parallelism", {
     })
   }
 })
+
+test_that("fls_prepare() writes cache folder if nonexistent", {
+  dir <- tempfile()
+  dir.create(dir)
+  withr::with_dir(dir, {
+    config <- drake::drake_config(drake_plan(a = 1))
+    config$cache_path <- "nope"
+    fls_prepare(config)
+    expect_true(file.exists("nope"))
+  })
+})
