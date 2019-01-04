@@ -1,0 +1,54 @@
+---
+output: github_document
+---
+
+[![stability-deprecated](https://img.shields.io/badge/stability-deprecated-red.svg)](https://github.com/emersion/stability-badges#deprecated)
+[![Travis build status](https://travis-ci.org/wlandau/drake.staged.svg?branch=master)](https://travis-ci.org/wlandau/drake.staged)
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+library(drake.future.lapply.staged)
+```
+
+# Staged parallelism for the drake R package
+
+With staged parallelism, `drake` partitions the dependency graph into stages of conditionally independent targets and processes each stage with semi-transient parallel workers.
+
+## Installation
+
+```{r installstaged, eval = FALSE}
+library(remotes)
+install_github("wlandau/drake.future.lapply.staged")
+```
+
+## Usage
+
+We begin with a `drake` project.
+
+```{r beginstaged}
+library(drake.future.lapply.staged)
+plan <- drake_plan(x = rnorm(100), y = mean(x), z = median(x))
+
+plan
+```
+
+First, create a `future` plan. See the [`future` README](https://github.com/HenrikBengtsson/future/blob/master/README.md) and [`future.batchtools` README](https://github.com/HenrikBengtsson/future.batchtools/blob/master/README.md) for guidance, and consult tables [here](https://github.com/HenrikBengtsson/future/blob/master/README.md#controlling-how-futures-are-resolved) and [here](https://github.com/HenrikBengtsson/future.batchtools/blob/master/README.md#choosing-batchtools-backend) for options for your plan.
+
+```{r introstaged}
+library(future)
+plan(multiprocess)
+```
+
+Next, run your `drake` project.
+
+```{r rundrake}
+library(drake.future.lapply.staged)
+make(plan, parallelism = backend_future_lapply_staged, jobs = 2)
+```

@@ -1,0 +1,33 @@
+Package: drake.future.lapply.staged
+Title: Staged Parallelism for the Drake R Package
+Description: This package implements future-based staged parallelism
+  for the drake R package. The functionality is already deprecated,
+  and it will fall into disuse at some point.
+Version: 0.0.0
+License: GPL-3
+URL: https://github.com/wlandau/drake.future.lapply.staged
+BugReports: https://github.com/wlandau/drake.future.lapply.staged/issues
+Authors@R: c(
+  person(
+    family = "Landau",
+    given = c("William", "Michael"),
+    email = "will.landau@gmail.com",
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0000-0003-1878-3253")
+  ),
+    person(
+    family = "Eli Lilly and Company",
+    role = "cph"
+  ))
+Depends:
+  R (>= 3.4.0),
+  drake
+Imports:
+  future,
+  future.apply
+Encoding: UTF-8
+Language: en-US
+Roxygen: list(markdown = TRUE)
+Suggests:
+  testthat
+RoxygenNote: 6.1.1
