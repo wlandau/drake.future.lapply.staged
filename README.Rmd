@@ -25,6 +25,7 @@ With staged parallelism, `drake` partitions the dependency graph into stages of 
 
 ```{r installstaged, eval = FALSE}
 library(remotes)
+install_github("ropensci/drake")
 install_github("wlandau/drake.future.lapply.staged")
 ```
 
