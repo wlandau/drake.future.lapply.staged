@@ -4,6 +4,12 @@ language: R
 sudo: false
 cache: packages
 
+r_packages:
+  - lintr
+
+r_github_packages:
+  - r-lib/covr
+
 warnings_are_errors: true
 
 script:
