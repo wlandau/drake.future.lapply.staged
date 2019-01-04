@@ -1,5 +1,5 @@
 
-[![stability-deprecated](https://img.shields.io/badge/stability-deprecated-red.svg)](https://github.com/emersion/stability-badges#deprecated) [![Travis build status](https://travis-ci.org/wlandau/drake.staged.svg?branch=master)](https://travis-ci.org/wlandau/drake.staged) [![Test coverage](https://codecov.io/github/wlandau/drake.future.lapply.staged/coverage.svg?branch=master)](https://codecov.io/github/wlandau/drake.future.lapply.staged?branch=master)
+[![stability-deprecated](https://img.shields.io/badge/stability-deprecated-red.svg)](https://github.com/emersion/stability-badges#deprecated) [![Travis build status](https://travis-ci.org/wlandau/drake.future.lapply.staged.svg?branch=master)](https://travis-ci.org/wlandau/drake.future.lapply.staged) [![Test coverage](https://codecov.io/github/wlandau/drake.future.lapply.staged/coverage.svg?branch=master)](https://codecov.io/github/wlandau/drake.future.lapply.staged?branch=master)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 Staged parallelism for the drake R package
