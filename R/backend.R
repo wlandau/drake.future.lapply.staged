@@ -8,7 +8,7 @@
 #' @export
 #' @param config a `drake_config()` object
 #' @examples
-#' # See <https://github.com/wlandau/drake.hasty/blob/master/README.md>
+#' # See <https://github.com/wlandau/drake.future.lapply.staged/blob/master/README.md> # nolint
 #' # for examples.
 backend_future_lapply_staged <- function(config) {
   warning(

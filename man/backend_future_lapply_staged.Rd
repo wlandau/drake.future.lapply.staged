@@ -18,6 +18,6 @@ This functionality is already deprecated,
 and it will be removed at some point later on.
 }
 \examples{
-# See <https://github.com/wlandau/drake.hasty/blob/master/README.md>
+# See <https://github.com/wlandau/drake.future.lapply.staged/blob/master/README.md> # nolint
 # for examples.
 }
