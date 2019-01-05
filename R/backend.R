@@ -19,7 +19,7 @@ backend_future_lapply_staged <- function(config) {
   drake:::assert_pkg("future")
   drake:::assert_pkg("future.apply")
   fls_prepare(config = config)
-  schedule <- config$schedule
+  schedule <- drake:::pretrim_schedule(config)
   while (length(igraph::V(schedule)$name)) {
     targets <- drake:::leaf_nodes(schedule)
     future.apply::future_lapply(
