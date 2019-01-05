@@ -61,7 +61,6 @@ fls_build <- function(target, cache_path) {
     return(invisible())
   }
   drake:::announce_build(target = target, meta = meta, config = config)
-  drake:::set_attempt_flag(key = target, config = config)
   drake:::manage_memory(targets = target, config = config)
   build <- drake:::build_target(target = target, meta = meta, config = config)
   drake:::conclude_build(build = build, config = config)
