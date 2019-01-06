@@ -38,6 +38,7 @@ fls_prepare <- function(config) {
   if (!file.exists(config$cache_path)) {
     dir.create(config$cache_path)
   }
+  store_drake_config(config)
   save(
     list = setdiff(ls(globalenv(), all.names = TRUE), config$plan$target),
     envir = globalenv(),
@@ -75,7 +76,7 @@ fls_conclude <- function(config) {
 
 recover_drake_config <- function(cache_path) {
   cache <- drake:::this_cache(cache_path, verbose = FALSE)
-  config <- drake:::read_drake_config(cache = cache)
+  config <- read_drake_config(cache = cache)
   dir <- drake:::cache_path(cache = cache)
   file <- globalenv_file(dir)
   load(file = file, envir = globalenv())
@@ -84,4 +85,33 @@ recover_drake_config <- function(cache_path) {
 
 globalenv_file <- function(cache_path) {
   file.path(cache_path, "globalenv.RData")
+}
+
+store_drake_config <- function(config) {
+  config$cache$flush_cache() # Less data to save this way.
+  save_these <- setdiff(names(config), "envir")  # envir could get massive.
+  lapply(
+    save_these,
+    function(item) {
+      config$cache$set(
+        key = item,
+        value = config[[item]],
+        namespace = "config"
+      )
+    }
+  )
+  invisible()
+}
+
+read_drake_config <- function(cache) {
+  keys <- cache$list(namespace = "config")
+  out <- lapply(
+    X = keys,
+    FUN = function(item) {
+      cache$get(key = item, namespace = "config", use_cache = FALSE)
+    }
+  )
+  names(out) <- keys
+  out$cache <- cache
+  out
 }
