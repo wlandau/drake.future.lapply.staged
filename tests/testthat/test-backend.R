@@ -38,7 +38,7 @@ test_that("future-based staged parallelism", {
         outdated(config),
         character(0)
       )
-      my_plan$command[2] <- paste0("identity(", my_plan$command[2], ")")
+      my_plan$command[2][[1]] <- as.call(c(identity, my_plan$command[2][[1]]))
       expect_warning(
         make(
           my_plan,
